@@ -2,7 +2,12 @@ package com.example.demo.web;
 
 
 import com.example.demo.entity.User;
+import com.example.demo.exception.MyException;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.*;
 
@@ -15,12 +20,15 @@ public class UserController {
 
     // 创建线程安全的Map
     static Map<Long, User> users = Collections.synchronizedMap(new HashMap<Long, User>());
-
+    @ApiIgnore//被标记的接口不会产生文档内容
+    @ApiOperation(value = "是否单例测试",notes = "经测试 发现spring Component默认是单例的，所以如果有共用资源一定要保证线程安全")
     @RequestMapping(value="/danli", method=RequestMethod.GET)
-    public void testDanLi() {
+    public void testDanLi() throws Exception {
         System.out.println(this.hashCode());
         System.out.println(Thread.currentThread().getId());
         //经测试 发现spring Component默认是单例的，所以如果有共用资源一定要保证线程安全
+        //throw  new Exception("发生错误1");
+        throw new MyException("发生错误2");
     }
     @RequestMapping(value="/", method=RequestMethod.GET)
     public List<User> getUserList() {
@@ -29,7 +37,8 @@ public class UserController {
         List<User> r = new ArrayList<User>(users.values());
         return r;
     }
-
+    @ApiOperation(value="创建用户", notes="根据User对象创建用户")
+    @ApiImplicitParam(name = "user", value = "用户详细实体user", required = true, dataType = "User")
     @RequestMapping(value="/", method=RequestMethod.POST)
     public String postUser(@ModelAttribute User user) {
         // 处理"/users/"的POST请求，用来创建User
@@ -44,7 +53,11 @@ public class UserController {
         // url中的id可通过@PathVariable绑定到函数的参数中
         return users.get(id);
     }
-
+    @ApiOperation(value="更新用户详细信息", notes="根据url的id来指定更新对象，并根据传过来的user信息来更新用户详细信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "用户ID", required = true, dataType = "Long"),
+            @ApiImplicitParam(name = "user", value = "用户详细实体user", required = true, dataType = "User")
+    })
     @RequestMapping(value="/{id}", method=RequestMethod.PUT)
     public String putUser(@PathVariable Long id, @ModelAttribute User user) {
         // 处理"/users/{id}"的PUT请求，用来更新User信息
