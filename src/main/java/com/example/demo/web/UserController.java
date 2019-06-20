@@ -42,7 +42,7 @@ public class UserController {
     @RequestMapping(value="/", method=RequestMethod.POST)
     public String postUser(@ModelAttribute User user) {
         // 处理"/users/"的POST请求，用来创建User
-        // 除了@ModelAttribute绑定参数之外，还可以通过@RequestParam从页面中传递参数
+        // 除了@ModelAttribute绑定参数之外(修正：@ModelAttribute不是用来绑定参数的，是用于绑定视图数据的，不会随着http响应给客户端。这里参数使用了 @ModelAttribute注解，那么在解析模板视图的时候就可以访问到user这个对象了)，还可以通过@RequestParam从页面中传递参数
         users.put(user.getId(), user);
         return "success";
     }
